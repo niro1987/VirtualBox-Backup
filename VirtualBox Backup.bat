@@ -21,11 +21,11 @@ CLS
 		ECHO:
 		ECHO VirtualBox Backup - Help
 		ECHO:
-		ECHO [ -b ^| --backupdir ] { PATH }                        - Set to change Backup Folder. Default: .\ (Same folder as this file)
-		ECHO [ -s ^| --shutdown ]  [ acpipowerbutton ^| savestate ] - Set to change Shutdown Mode. Default: acpipowerbutton (Clean shutdown)
-		ECHO [ -c ^| --compress ]  [ 0 - 9 ]                       - Set to change Compression Mode. Default: 0 (No compression)
-		ECHO [ -k ^| --keep ] [ 0 - ~ ]                            - Set to change Cleanup Mode. Default: 0 (All)
-		ECHO [ -p ^| --prefix ] { PREFIX }                         - Set to change Name Prefix. Default: "" (No prefix)
+		ECHO ^[ -b ^| --backupdir ^] ^{ PATH ^}                        - Set to change Backup Folder. Default: .\ ^(Same folder as this file^)
+		ECHO ^[ -s ^| --shutdown ^]  ^[ acpipowerbutton ^| savestate ^] - Set to change Shutdown Mode. Default: acpipowerbutton ^(Clean shutdown^)
+		ECHO ^[ -c ^| --compress ^]  ^[ 0 - 9 ^]                       - Set to change Compression Mode. Default: 0 ^(No compression^)
+		ECHO ^[ -k ^| --keep ^] ^[ 0 - ~ ^]                            - Set to change Cleanup Mode. Default: 0 ^(All^)
+		ECHO ^[ -p ^| --prefix ^] ^{ PREFIX ^}                         - Set to change Name Prefix. Default: "" ^(No prefix^)
 		ECHO: 
 		ECHO Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage
 		ECHO:
