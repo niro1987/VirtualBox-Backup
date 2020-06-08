@@ -10,4 +10,4 @@ FOR %%C IN ("%~dp0.") DO SET "_VBBACKUP=%%~fC\VirtualBox Backup.bat"
 :: [ --gfs ]                                            - Set to enable Grandfather-Father-Son rotation. Default: Disabled
 
 :: Example - Modify according to your needs
-"%_VBBACKUP%" --backupdir="" --shutdown=acpipowerbutton --compress=0 --keep=0 --prefix=""
+"%_VBBACKUP%" --backupdir="" --shutdown=acpipowerbutton --compress=3 --keep=4 --prefix="Father" --gfs

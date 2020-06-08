@@ -9,13 +9,14 @@ An automated backup for Oracle VirtualBox VMs in Windows
   - [Compression Mode](#compression-mode)
   - [Cleanup Mode](#cleanup-mode)
   - [Name Prefix](#name-prefix)
+  - [Grandfather-Father-Son Rotation](#grandfather-father-son-rotation)
 
 # Installation
 1. Clone or copy this repository to the desired location.
 2. Edit and rename *(optional)* **Example Start.bat** according to your needs. See below [Usage](#Usage)
 3. Create a basic task to periodically start **Example Start.bat** *(or whatever you named it)* with [Task Scheduler](https://www.google.com/search?q=Windows+Task+Scheduler&oq=Windows+Task+Scheduler).
 
-I've tried passing the arguments directly to *VirtualBox Backup.bat* in Task Scheduler but the task didn't start correctly. Has to do with the usage of quotes `"` and spaces ` ` between them. Using *Example Start.bat* as the placeholder makes editing the parameters a bit more *'user friendly'*.
+I've tried passing the arguments directly to *VirtualBox Backup.bat* in Task Scheduler but the task didn't start correctly. Has to do with the usage of quotes and spaces between them. Using *Example Start.bat* as the placeholder makes editing the parameters a bit more *'user friendly'*.
 
 # Usage
 All paramters are optional. If you do not pass a parameter, it will revert to it's default behavior as documented below.
@@ -73,8 +74,20 @@ Delete old VM Backup files (or folders) and keeps the last `[x]` files. If no [P
 ```
 Each backup is saved to a folder named after the VM. The backup file/folder is named after the date the backup was created on (exact string depends on regional settings). Pass the above parameter to prefix an additional string to the backup name, an additional space is automatically added to the `PREFIX` string.
 
-Use this paramter to create a [Grandfather-father-son](https://en.wikipedia.org/wiki/Backup_rotation_scheme)- like backup rotation. [Cleanup Mode](#cleanup-mode) maintains the same prefix and does not delete backup's with a different (or no) prefix if one is set.
+| Parameter | Description |
+| --------- | ----------- |
+| `--prefix=""` | *(default)* No prefix. |
+| `--prefix="Daily"` | Prefix the backup name with `"Daily"` |
 
+## Grandfather-Father-Son Rotation
+```
+[ --gfs ]
+```
+Add this parameter to enabled [Grandfather-Father-Son](https://en.wikipedia.org/wiki/Backup_rotation_scheme) rotation. This mode checks if another backup exists with the same date (can have any prefix) and skips the VM accordingly.
+
+You will need to create and schedule the **Example Start [Grandfather | Father | Son].bat** files, one for each generation.
+
+Use this paramter to create a 
 | Parameter | Description |
 | --------- | ----------- |
 | `--prefix=""` | *(default)* No prefix. |

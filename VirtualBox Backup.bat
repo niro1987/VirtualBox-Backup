@@ -13,6 +13,7 @@ CLS
 	SET "_COMPRESS="
 	SET "_KEEP="
 	SET "_PREFIX="
+	SET "_GFS="
 
 	:ParseParameters
 	CALL :getParamFlag "/?" "_README" "%~1" && SHIFT /1 && GOTO :ParseParameters
@@ -26,6 +27,7 @@ CLS
 		CALL :DebugLog "[ -c | --compress ]  [ 0 - 9 ]                       - Set to change Compression Mode. Default: 0 (No compression)
 		CALL :DebugLog "[ -k | --keep ] [ 0 - ~ ]                            - Set to change Cleanup Mode. Default: 0 (All)
 		CALL :DebugLog "[ -p | --prefix ] { PREFIX }                         - Set to change Name Prefix. Default: "" (No prefix)
+		CALL :DebugLog "[ --gfs ]                                            - Set to enable Grandfather-Father-Son rotation. Default: Disabled"
 		ECHO: 
 		CALL :DebugLog "Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage"
 		ECHO:
@@ -47,6 +49,8 @@ CLS
 	CALL :getParameter "-p" "_PREFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
 	CALL :getParameter "--prefix" "_PREFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
 
+	CALL :getParamFlag "--gfs" "_GFS" "%~1" && SHIFT /1 && GOTO :ParseParameters
+
 	IF NOT DEFINED _BACKUPDIR (
 		FOR %%i IN ("%~dp0.") DO SET "_BACKUPDIR=%%~fi"
 	)
@@ -62,6 +66,9 @@ CLS
 	IF NOT DEFINED _PREFIX (
 		SET "_PREFIX="
 	)
+	IF NOT DEFINED _GFS (
+		SET "_GFS=FALSE"
+	)
 
 	SET "_VBOXMANAGE=C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 	SET "_7za=C:\Program Files\7-Zip\7za.exe"
@@ -73,15 +80,16 @@ CLS
 	"%_VBOXMANAGE%" list vms
 	ECHO: 
 	CALL :DebugLog "Parameters..."
-	CALL :DebugLog "Backup Folder: "%_BACKUPDIR%""
-	CALL :DebugLog "Shutdown Mode: "%_SHUTDOWN%""
+	CALL :DebugLog "Backup Folder: %_BACKUPDIR%"
+	CALL :DebugLog "Shutdown Mode: %_SHUTDOWN%"
 	IF EXIST "%_7za%" (
 		CALL :DebugLog "Compression Mode: %_COMPRESS%"
 	) ELSE (
-		CALL :DebugLog "Compression Mode: Could not find "%_7za%""
+		CALL :DebugLog "Compression Mode: Disabled"
 	)
 	CALL :DebugLog "Cleanup Mode: %_KEEP%"
-	CALL :DebugLog "Name Prefix: "%_PREFIX%""
+	CALL :DebugLog "Name Prefix: %_PREFIX%"
+	CALL :DebugLog "GrandFather-Father-Son: %_GFS%"
 	ECHO:
 	ECHO:
 
@@ -104,14 +112,23 @@ CLS
 		:: Uncomment and modify the following line to skip a specific VM
 		:: IF "%_VMNAME%"=="Home Assistant" EXIT /B 0
 
+		:VM_GFS
+		:: Check for an existing backup on the same date and skip the VM if exists
+			IF "%_GFS%"=="TRUE" (
+				FOR /F "eol=: delims=" %%F IN ('DIR /B "%_BACKUPDIR%\%_VMNAME%\*%_DATE%*"') DO (
+					CALL :DebugLog "GFS Found: %_VMNAME%\%%~F..."
+					Exit /B 0
+				)
+			)
+
 		:VM_PowerOff
 		:: Shut down the VM (if it's running)
 			CALL :GetState
 			IF /I "%_VMSTATE%"=="running" (
-				CALL :DebugLog "VM is "%_VMSTATE%".."
+				CALL :DebugLog "VM is %_VMSTATE%.."
 				CALL :PowerOff
 			)
-			CALL :DebugLog "VM is "%_VMSTATE%".."
+			CALL :DebugLog "VM is %_VMSTATE%.."
 
 		:VM_CopyFiles
 		:: Copy the VM files
@@ -143,7 +160,7 @@ CLS
 		IF %_KEEP% GTR 0 (
 			CALL :DebugLog "Cleanup of old backups..."
 			FOR /F "skip=%_KEEP% eol=: delims=" %%F IN ('DIR /T:C /B /O:-D "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%*"') DO (
-				CALL :DebugLog "Delete "%_VMNAME%\%%~F"..."
+				CALL :DebugLog "Delete %_VMNAME%\%%~F..."
 				FOR %%Z IN ("%_BACKUPDIR%\%_VMNAME%\%%~F") DO (
 					IF "%%~aZ" GEQ "d" (
 						RD /S /Q "%_BACKUPDIR%\%_VMNAME%\%%~F"
