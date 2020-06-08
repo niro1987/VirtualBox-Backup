@@ -11,9 +11,11 @@ An automated backup for Oracle VirtualBox VMs in Windows
   - [Name Prefix](#name-prefix)
 
 # Installation
-1. Clone or copy this repository to the desired backup folder.
-2. Create a basic task to periodically start **VirtualBox Backup.bat** with [Task Scheduler](https://www.google.com/search?q=Windows+Task+Scheduler&oq=Windows+Task+Scheduler).
-3. *Optional:* Apply below parameters depending on your requirements.
+1. Clone or copy this repository to the desired location.
+2. Edit and rename *(optional)* **Example Start.bat** according to your needs. See below [Usage](#Usage)
+3. Create a basic task to periodically start **Example Start.bat** *(or whatever you named it)* with [Task Scheduler](https://www.google.com/search?q=Windows+Task+Scheduler&oq=Windows+Task+Scheduler).
+
+I've tried passing the arguments directly to *VirtualBox Backup.bat* in Task Scheduler but the task didn't start correctly. Has to do with the usage of quotes `"` and spaces ` ` between them. Using *Example Start.bat* as the placeholder makes editing the parameters a bit more *'user friendly'*.
 
 # Usage
 All paramters are optional. If you do not pass a parameter, it will revert to it's default behavior as documented below.
@@ -26,9 +28,9 @@ By default the VM Backup's are saved to the folder where you saved the repositor
 
 | Parameter | Description |
 | --------- | ----------- |
-| `--backupdir` | *(default)* Parent folder |
-| `--backupdir "%USERPROFILE%"` | C:\Users\UserName |
-| `--backupdir "C:\Backup"` | C:\Backup |
+| `--backupdir=""` | *(default)* Parent folder |
+| `--backupdir="%USERPROFILE%"` | C:\Users\UserName |
+| `--backupdir="C:\Backup"` | C:\Backup |
 
 ## Shutdown Mode
 ```
@@ -38,8 +40,8 @@ The VM needs to be shut down to copy the required files. Pass the above paramete
 
 | Parameter | Description |
 | --------- | ----------- |
-| `--shutdown acpipowerbutton` | *(default)* Use The VM is shut down using the ACPI mode. This is the same as short pressing the powerbutton on your PC, shuts it down clean. |
-| `--shutdown savestate` | The VM's state is saved and powered down. This does not actually shut down the VM, it's more like stopping time. Not all VM's (OS's) can handle the *gap* in time. | 
+| `--shutdown=acpipowerbutton` | *(default)* Use The VM is shut down using the ACPI mode. This is the same as short pressing the powerbutton on your PC, shuts it down clean. |
+| `--shutdown=savestate` | The VM's state is saved and powered down. This does not actually shut down the VM, it's more like stopping time. Not all VM's (OS's) can handle the *gap* in time. | 
 
 ## Compression Mode
 ```
@@ -51,8 +53,8 @@ The VM Backup Files can be compressed to a single file to save some diskspace an
 
 | Parameter | Description |
 | --------- | ----------- |
-| `--compress 0` | *(default)* No compression. While this does not actually compress the files, it does make them easier to handle because the backup is reduced to a single file. |
-| `--compress [1 - 9]` | Set compression level: 1 (fastest) ... 9 (ultra). |
+| `--compress=0` | *(default)* No compression. While this does not actually compress the files, it does make them easier to handle because the backup is reduced to a single file. |
+| `--compress=[1 - 9]` | Set compression level: 1 (fastest) ... 9 (ultra). |
 
 ## Cleanup Mode
 ```
@@ -62,8 +64,8 @@ Delete old VM Backup files (or folders) and keeps the last `[x]` files. If no [P
 
 | Parameter | Description |
 | --------- | ----------- |
-| `--keep 0` | *(default)* No cleanup. Keep all files. |
-| `--keep [x]` | Keep the `[x]` last created files/folder. |
+| `--keep=0` | *(default)* No cleanup. Keep all files. |
+| `--keep=[x]` | Keep the `[x]` last created files/folder. |
 
 ## Name Prefix
 ```
@@ -75,5 +77,5 @@ Use this paramter to create a [Grandfather-father-son](https://en.wikipedia.org/
 
 | Parameter | Description |
 | --------- | ----------- |
-| `--prefix ""` | *(default)* No prefix. |
-| `--prefix "Daily"` | Prefix the backup name with `"Daily"` |
+| `--prefix=""` | *(default)* No prefix. |
+| `--prefix="Daily"` | Prefix the backup name with `"Daily"` |
