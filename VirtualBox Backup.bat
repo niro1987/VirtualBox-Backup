@@ -19,15 +19,15 @@ CLS
 	IF DEFINED _README (
 		ECHO:
 		ECHO:
-		ECHO VirtualBox Backup - Help
+		CALL :DebugLog "VirtualBox Backup - Help"
 		ECHO:
-		ECHO ^[ -b ^| --backupdir ^] ^{ PATH ^}                        - Set to change Backup Folder. Default: .\ ^(Same folder as this file^)
-		ECHO ^[ -s ^| --shutdown ^]  ^[ acpipowerbutton ^| savestate ^] - Set to change Shutdown Mode. Default: acpipowerbutton ^(Clean shutdown^)
-		ECHO ^[ -c ^| --compress ^]  ^[ 0 - 9 ^]                       - Set to change Compression Mode. Default: 0 ^(No compression^)
-		ECHO ^[ -k ^| --keep ^] ^[ 0 - ~ ^]                            - Set to change Cleanup Mode. Default: 0 ^(All^)
-		ECHO ^[ -p ^| --prefix ^] ^{ PREFIX ^}                         - Set to change Name Prefix. Default: "" ^(No prefix^)
+		CALL :DebugLog "[ -b | --backupdir ] { PATH }                        - Set to change Backup Folder. Default: .\ (Same folder as this file)"
+		CALL :DebugLog "[ -s | --shutdown ]  [ acpipowerbutton | savestate ] - Set to change Shutdown Mode. Default: acpipowerbutton (Clean shutdown)
+		CALL :DebugLog "[ -c | --compress ]  [ 0 - 9 ]                       - Set to change Compression Mode. Default: 0 (No compression)
+		CALL :DebugLog "[ -k | --keep ] [ 0 - ~ ]                            - Set to change Cleanup Mode. Default: 0 (All)
+		CALL :DebugLog "[ -p | --prefix ] { PREFIX }                         - Set to change Name Prefix. Default: "" (No prefix)
 		ECHO: 
-		ECHO Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage
+		CALL :DebugLog "Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage"
 		ECHO:
 		EXIT /B 0 
 	)
@@ -69,19 +69,19 @@ CLS
 	SET _ERROR=0
 	SET _WAITTIME=5
 
-	ECHO Starting VirtualBox Backup...
+	CALL :DebugLog "Starting VirtualBox Backup..."
 	"%_VBOXMANAGE%" list vms
 	ECHO: 
-	ECHO Parameters...
-	ECHO Backup Folder: "%_BACKUPDIR%"
-	ECHO Shutdown Mode: "%_SHUTDOWN%"
+	CALL :DebugLog "Parameters..."
+	CALL :DebugLog "Backup Folder: "%_BACKUPDIR%""
+	CALL :DebugLog "Shutdown Mode: "%_SHUTDOWN%""
 	IF EXIST "%_7za%" (
-		ECHO Compression Mode: %_COMPRESS%
+		CALL :DebugLog "Compression Mode: %_COMPRESS%"
 	) ELSE (
-		ECHO Compression Mode: Could not find "%_7za%"
+		CALL :DebugLog "Compression Mode: Could not find "%_7za%""
 	)
-	ECHO Cleanup Mode: %_KEEP%
-	ECHO Name Prefix: "%_PREFIX%"
+	CALL :DebugLog "Cleanup Mode: %_KEEP%"
+	CALL :DebugLog "Name Prefix: "%_PREFIX%""
 	ECHO:
 	ECHO:
 
@@ -100,24 +100,23 @@ CLS
 		SET _REQUESTOFF=0
 		SET _LOOPCOUNT=12
 
-		ECHO "%_VMNAME%"
+		CALL :DebugLog "%_VMNAME%"
+		:: Uncomment and modify the following line to skip a specific VM
+		:: IF "%_VMNAME%"=="Home Assistant" EXIT /B 0
 
 		:VM_PowerOff
 		:: Shut down the VM (if it's running)
 			CALL :GetState
 			IF /I "%_VMSTATE%"=="running" (
-				IF %_REQUESTOFF% EQU 0 (
-					ECHO VM is "%_VMSTATE%"..
-				)
-				GOTO :PowerOff
-			) ELSE (
-				ECHO VM is "%_VMSTATE%"..
+				CALL :DebugLog "VM is "%_VMSTATE%".."
+				CALL :PowerOff
 			)
+			CALL :DebugLog "VM is "%_VMSTATE%".."
 
 		:VM_CopyFiles
 		:: Copy the VM files
 			CALL :GetPath
-			ECHO Copy Files...
+			CALL :DebugLog "Copy Files..."
 			IF EXIST "%_7za%" (
 				ROBOCOPY "%_VMPATH%." "%TEMP%\%_VMUUID%" /E
 			) ELSE (
@@ -127,14 +126,14 @@ CLS
 		:VM_Start
 		:: Start the VM (if it was running)
 			IF /I "%_VMINITSTATE%"=="running" (
-				ECHO Starting VM...
+				CALL :DebugLog "Starting VM..."
 				CALL :PowerOn
 			)
 
 		:VM_Compress
 		:: Compress the VM Backup Files to a single compressed file
 			IF EXIST "%_7za%" (
-				ECHO Compress Files...
+				CALL :DebugLog "Compress Files..."
 				"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%.7z" "%TEMP%\%_VMUUID%\*"
 				RD /S /Q "%TEMP%\%_VMUUID%"
 			)
@@ -142,9 +141,9 @@ CLS
 		:VM_Cleanup
 		:: Delete old backups
 		IF %_KEEP% GTR 0 (
-			ECHO Cleanup of old backups...
+			CALL :DebugLog "Cleanup of old backups..."
 			FOR /F "skip=%_KEEP% eol=: delims=" %%F IN ('DIR /T:C /B /O:-D "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%*"') DO (
-				ECHO Delete "%_VMNAME%\%%~F"...
+				CALL :DebugLog "Delete "%_VMNAME%\%%~F"..."
 				FOR %%Z IN ("%_BACKUPDIR%\%_VMNAME%\%%~F") DO (
 					IF "%%~aZ" GEQ "d" (
 						RD /S /Q "%_BACKUPDIR%\%_VMNAME%\%%~F"
@@ -163,14 +162,22 @@ CLS
 		EXIT /B 0
 		GOTO :EOF
 
+:DebugLog
+    FOR %%L IN ("%~dp0.") DO SET "_LOGFILE=%%~fL\log.txt"
+	FOR /F "tokens=* delims=" %%A IN ("%~1") DO (
+		ECHO %%~A
+        :: Uncomment the following line to enable debugging
+		:: ECHO [%DATE% - %TIME%] %%~A >> "%_LOGFILE%" 2>&1
+    )
+    EXIT /B 0
+
 :Terminate
 :: Check for errors and exit..
 	IF %_ERROR% EQU 100 (
-		SET _ERRORMSG="Timeout during PowerOff"
+		SET _ERRORMSG="Timeout during Shutdown"
 	)
 	IF %_ERROR% GTR 0 (
-		NOW %_ERROR%: %_ERRORMSG%
-		NOW %_ERROR%: %_ERRORMSG% >> %_BACKUPDIR%\errorlog.txt
+		CALL :DebugLog  "ERROR: %_ERRORMSG%"
 	)
 	EXIT /B
 	GOTO :EOF
@@ -183,16 +190,18 @@ CLS
 
 :PowerOff
 :: Takes the VM UUID from %_VMUUID% and tries to shut it down
+	CALL :GetState
+	IF /I NOT "%_VMSTATE%"=="running" EXIT /B 0
+	IF %_REQUESTOFF% EQU 0 (
+		SET _REQUESTOFF=1
+		CALL :DebugLog "VM Shutdown..."
+		"%_VBOXMANAGE%" controlvm %_VMUUID% %_SHUTDOWN%
+	)
 	IF %_LOOPCOUNT% GTR 0 (
-		IF %_REQUESTOFF% EQU 0 (
-			SET _REQUESTOFF=1
-			ECHO VM Shutdown...
-			"%_VBOXMANAGE%" controlvm %_VMUUID% %_SHUTDOWN%
-		)
-		ECHO Waiting for VM to shut down...
-		TIMEOUT /t %_WAITTIME% /nobreak > nul
+		CALL :DebugLog "Waiting for VM to shut down..."
+		TIMEOUT /T %_WAITTIME% /nobreak > nul
 		SET /A _LOOPCOUNT-=1
-		GOTO :VM_PowerOff
+		CALL :PowerOff
 	) ELSE (
 		SET _ERROR=100
 		GOTO :Terminate
