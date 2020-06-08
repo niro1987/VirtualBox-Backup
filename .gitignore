@@ -1,0 +1,9 @@
+# Ignore All
+*
+**
+
+# Except for these files
+!.gitignore
+!LICENSE
+!README.md
+!/VirtualBox Backup.bat
