@@ -128,7 +128,7 @@ CLS
 		:: Start the VM (if it was running)
 			IF /I "%_VMINITSTATE%"=="running" (
 				ECHO Starting VM...
-				"%_VBOXMANAGE%" startvm %_VMUUID% --type headless
+				CALL :PowerOn
 			)
 
 		:VM_Compress
