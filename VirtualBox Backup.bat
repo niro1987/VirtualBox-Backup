@@ -115,8 +115,9 @@ CLS
 		:VM_GFS
 		:: Check for an existing backup on the same date and skip the VM if exists
 			IF "%_GFS%"=="TRUE" (
+				CALL :DebugLog "Checking for existing backups..."
 				FOR /F "eol=: delims=" %%F IN ('DIR /B "%_BACKUPDIR%\%_VMNAME%\*%_DATE%*"') DO (
-					CALL :DebugLog "GFS Found: %_VMNAME%\%%~F..."
+					CALL :DebugLog "Found: %_VMNAME%\%%~F..."
 					Exit /B 0
 				)
 			)
