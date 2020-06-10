@@ -7,7 +7,7 @@ CLS
 
 :Initialize
 
-	CALL :getDateTime
+	CALL :DebugLog "Starting VirtualBox Backup..."
 	FOR %%L IN ("%~dp0.") DO SET "_LOGFILE=%%~fL\log.txt"
 
 	SET "_README="
@@ -83,7 +83,6 @@ CLS
 	SET _ERROR=0
 	SET _WAITTIME=5
 
-	CALL :DebugLog "Starting VirtualBox Backup..."
 	"%_VBOXMANAGE%" list vms
 	ECHO: 
 	CALL :DebugLog "Parameters..."
@@ -192,6 +191,7 @@ CLS
 		GOTO :EOF
 
 :DebugLog
+	CALL :getDateTime
 	FOR /F "tokens=* delims=" %%A IN ("%~1") DO (
 		ECHO %%~A
         :: Uncomment (remove 'REM') the following line to enable debugging
