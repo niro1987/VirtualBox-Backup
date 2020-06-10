@@ -148,7 +148,7 @@ CLS
 			IF EXIST "%_7za%" (
 				ROBOCOPY "%_VMPATH%." "%TEMP%\%_VMUUID%" /E
 			) ELSE (
-				ROBOCOPY "%_VMPATH%." "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%%_SUFFIX%" /E
+				ROBOCOPY "%_VMPATH%." "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATETIME%%_SUFFIX%" /E
 			)
 
 		:VM_Start
@@ -162,7 +162,7 @@ CLS
 		:: Compress the VM Backup Files to a single compressed file
 			IF EXIST "%_7za%" (
 				CALL :DebugLog "Compress Files..."
-				"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%%_SUFFIX%.7z" "%TEMP%\%_VMUUID%\*"
+				"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATETIME%%_SUFFIX%.7z" "%TEMP%\%_VMUUID%\*"
 				RD /S /Q "%TEMP%\%_VMUUID%"
 			)
 
