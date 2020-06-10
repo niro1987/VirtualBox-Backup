@@ -7,6 +7,9 @@ CLS
 
 :Initialize
 
+	CALL :getDateTime
+	FOR %%L IN ("%~dp0.") DO SET "_LOGFILE=%%~fL\log.txt"
+
 	SET "_README="
 	SET "_BACKUPDIR="
 	SET "_SHUTDOWN="
@@ -72,7 +75,7 @@ CLS
 
 	SET "_VBOXMANAGE=C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 	SET "_7za=C:\Program Files\7-Zip\7za.exe"
-	SET "_DATE=%DATE%"
+	SET "_DATE=%_DATETIME:~0,8%"
 	SET _ERROR=0
 	SET _WAITTIME=5
 
@@ -181,11 +184,10 @@ CLS
 		GOTO :EOF
 
 :DebugLog
-    FOR %%L IN ("%~dp0.") DO SET "_LOGFILE=%%~fL\log.txt"
 	FOR /F "tokens=* delims=" %%A IN ("%~1") DO (
 		ECHO %%~A
-        :: Uncomment the following line to enable debugging
-		:: ECHO [%DATE% - %TIME%] %%~A >> "%_LOGFILE%" 2>&1
+        :: Uncomment (remove 'REM') the following line to enable debugging
+		REM ECHO [%_DATETIME%] %%~A >> "%_LOGFILE%" 2>&1
     )
     EXIT /B 0
 
@@ -284,3 +286,12 @@ CLS
 	)
 	EXIT /B 1
 	GOTO :EOF
+
+:getDateTime
+:: https://ss64.com/nt/syntax-getdate.html
+:: Returns the current date in YYYYMMDDHHMM format in _DATETIME
+	ECHO Dim dt > "%TEMP%\getdatetime.vbs"
+	ECHO dt=now >> "%TEMP%\getdatetime.vbs"
+	ECHO wscript.echo ((year(dt)*100 + month(dt))*100 + day(dt))*10000 + hour(dt)*100 + minute(dt) >> "%TEMP%\getdatetime.vbs"
+	FOR /F %%D IN ('cscript /nologo "%TEMP%\getdatetime.vbs"') DO SET _DATETIME=%%D
+	DEL /Q "%TEMP%\getdatetime.vbs"
