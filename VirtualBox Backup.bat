@@ -26,10 +26,11 @@ CLS
 		CALL :DebugLog "VirtualBox Backup - Help"
 		ECHO:
 		CALL :DebugLog "[ -b | --backupdir ] { PATH }                        - Set to change Backup Folder. Default: .\ (Same folder as this file)"
-		CALL :DebugLog "[ -s | --shutdown ]  [ acpipowerbutton | savestate ] - Set to change Shutdown Mode. Default: acpipowerbutton (Clean shutdown)
-		CALL :DebugLog "[ -c | --compress ]  [ 0 - 9 ]                       - Set to change Compression Mode. Default: 0 (No compression)
-		CALL :DebugLog "[ -k | --keep ] [ 0 - ~ ]                            - Set to change Cleanup Mode. Default: 0 (All)
-		CALL :DebugLog "[ -p | --prefix ] { PREFIX }                         - Set to change Name Prefix. Default: "" (No prefix)
+		CALL :DebugLog "[ -s | --shutdown ]  [ acpipowerbutton | savestate ] - Set to change Shutdown Mode. Default: acpipowerbutton (Clean shutdown)"
+		CALL :DebugLog "[ -c | --compress ]  [ 0 - 9 ]                       - Set to change Compression Mode. Default: 0 (No compression)"
+		CALL :DebugLog "[ -k | --keep ]      [ 0 - ~ ]                       - Set to change Cleanup Mode. Default: 0 (All)"
+		CALL :DebugLog "[ -p | --prefix ]    { PREFIX }                      - Set to change Name Prefix. Default: "" (No prefix)"
+		CALL :DebugLog "[ -s | --suffix ]    { SUFFIX }                      - Set to change Name Suffix. Default: "" (No suffix)"
 		CALL :DebugLog "[ --gfs ]                                            - Set to enable Grandfather-Father-Son rotation. Default: Disabled"
 		ECHO: 
 		CALL :DebugLog "Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage"
@@ -51,6 +52,9 @@ CLS
 
 	CALL :getParameter "-p" "_PREFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
 	CALL :getParameter "--prefix" "_PREFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+
+	CALL :getParameter "-s" "_SUFFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParameter "--suffix" "_SUFFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
 
 	CALL :getParamFlag "--gfs" "_GFS" "%~1" && SHIFT /1 && GOTO :ParseParameters
 
@@ -92,12 +96,16 @@ CLS
 	)
 	CALL :DebugLog "Cleanup Mode: %_KEEP%"
 	CALL :DebugLog "Name Prefix: %_PREFIX%"
+	CALL :DebugLog "Name Suffix: %_SUFFIX%"
 	CALL :DebugLog "GrandFather-Father-Son: %_GFS%"
 	ECHO:
 	ECHO:
 
 	IF DEFINED _PREFIX (
 		SET "_PREFIX=%_PREFIX% "
+	)
+	IF DEFINED _SUFFIX (
+		SET "_SUFFIX= %_SUFFIX%"
 	)
 
 	FOR /F "tokens=* delims=" %%V IN ('"%_VBOXMANAGE%" list vms') DO CALL :VM_Initialize %%V
@@ -141,7 +149,7 @@ CLS
 			IF EXIST "%_7za%" (
 				ROBOCOPY "%_VMPATH%." "%TEMP%\%_VMUUID%" /E
 			) ELSE (
-				ROBOCOPY "%_VMPATH%." "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%" /E
+				ROBOCOPY "%_VMPATH%." "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%%_SUFFIX%" /E
 			)
 
 		:VM_Start
@@ -155,7 +163,7 @@ CLS
 		:: Compress the VM Backup Files to a single compressed file
 			IF EXIST "%_7za%" (
 				CALL :DebugLog "Compress Files..."
-				"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%.7z" "%TEMP%\%_VMUUID%\*"
+				"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%%_SUFFIX%.7z" "%TEMP%\%_VMUUID%\*"
 				RD /S /Q "%TEMP%\%_VMUUID%"
 			)
 
@@ -163,7 +171,7 @@ CLS
 		:: Delete old backups
 		IF %_KEEP% GTR 0 (
 			CALL :DebugLog "Cleanup of old backups..."
-			FOR /F "skip=%_KEEP% eol=: delims=" %%F IN ('DIR /T:C /B /O:-D "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%*"') DO (
+			FOR /F "skip=%_KEEP% eol=: delims=" %%F IN ('DIR /T:C /B /O:-D "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%*%_SUFFIX%*"') DO (
 				CALL :DebugLog "Delete %_VMNAME%\%%~F..."
 				FOR %%Z IN ("%_BACKUPDIR%\%_VMNAME%\%%~F") DO (
 					IF "%%~aZ" GEQ "d" (

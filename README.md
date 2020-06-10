@@ -8,7 +8,7 @@ An automated backup for Oracle VirtualBox VMs in Windows
   - [Shutdown Mode](#shutdown-mode)
   - [Compression Mode](#compression-mode)
   - [Cleanup Mode](#cleanup-mode)
-  - [Name Prefix](#name-prefix)
+  - [Name Prefix/Suffix](#name-prefixsuffix)
   - [Grandfather-Father-Son Rotation](#grandfather-father-son-rotation)
 
 # Installation
@@ -68,16 +68,19 @@ Delete old VM Backup files (or folders) and keeps the last `[x]` files. If no [P
 | `--keep=0` | *(default)* No cleanup. Keep all files. |
 | `--keep=[x]` | Keep the `[x]` last created files/folder. |
 
-## Name Prefix
+## Name Prefix/Suffix
 ```
 [ -p | --prefix ] { PREFIX }
+[ -s | --suffix ] { SUFFIX }
 ```
-Each backup is saved to a folder named after the VM. The backup file/folder is named after the date the backup was created on (exact string depends on regional settings). Pass the above parameter to prefix an additional string to the backup name, an additional space is automatically added to the `PREFIX` string.
+Each backup is saved to a folder named after the VM. The backup file/folder is named after the date the backup was created on (exact string depends on regional settings). Pass the above parameter to prefix and/or suffix (append) an additional string to the backup name, an additional space `" "` is automatically added.
 
 | Parameter | Description |
 | --------- | ----------- |
 | `--prefix=""` | *(default)* No prefix. |
 | `--prefix="Daily"` | Prefix the backup name with `"Daily"` |
+| `--suffix=""` | *(default)* No suffix. |
+| `--suffix="Weekly"` | Suffix (append) the backup name with `"Weekly"` |
 
 ## Grandfather-Father-Son Rotation
 ```
@@ -85,10 +88,20 @@ Each backup is saved to a folder named after the VM. The backup file/folder is n
 ```
 Add this parameter to enabled [Grandfather-Father-Son](https://en.wikipedia.org/wiki/Backup_rotation_scheme) rotation. This mode checks if another backup exists with the same date (can have any prefix) and skips the VM accordingly.
 
-You will need to create and schedule the **Example Start [Grandfather | Father | Son].bat** files, one for each generation.
+You will need to create and schedule the **Example Start [Grandfather | Father | Son].bat** files, one for each generation. An *older* generation should be scheduled to run before a *younger* generation.
 
-Use this paramter to create a 
-| Parameter | Description |
-| --------- | ----------- |
-| `--prefix=""` | *(default)* No prefix. |
-| `--prefix="Daily"` | Prefix the backup name with `"Daily"` |
+Assuming a single VM does not take more than 15 minutes to backup you could schedule the rotation as follows.
+
+| Rotation | Parameters | Description |
+| -------- | ---------- | ----------- |
+| `Monthly Grandfather.bat` | `--keep=3` | Scheduled to run at `02:00` on the first Monday of every month. |
+| `Weekly Father.bat` | `--keep=4` | Scheduled to run at `02:15` on every Monday of every week. |
+| `Daily Son.bat` | `--keep=2` | Scheduled to run at `02:30` daily. |
+
+By the end of June 2020 it would look like this.
+
+| *Day*       | 1-4 | 1-5 | 1-6 | 8-6 | 15-6 | 22-6 | 28-6 | 29-6 | 30-6 |
+| ----------- | -   | -   | -   | -   | -    | -    | -    | -    | -    |
+| Grandfather | X   | X   | X   | -   | -    | -    | -    | -    | -    |
+| Father      | -   | -   | -   | X   | X    | X    | -    | X    | -    |
+| Son         | -   | -   | -   | -   | -    | -    | X    | -    | X    |
