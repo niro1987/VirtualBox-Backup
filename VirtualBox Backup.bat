@@ -18,6 +18,8 @@ CLS
 	SET "_PREFIX="
 	SET "_SUFFIX="
 	SET "_GFS="
+	SET "_EXCLUDE="
+	SET "_INCLUDE="
 
 	:ParseParameters
 	CALL :getParamFlag "/?" "_README" "%~1" && SHIFT /1 && GOTO :ParseParameters
@@ -33,6 +35,8 @@ CLS
 		CALL :DebugLog "[ -p | --prefix ]    { PREFIX }                      - Set to change Name Prefix. Default: "" (No prefix)"
 		CALL :DebugLog "[ -s | --suffix ]    { SUFFIX }                      - Set to change Name Suffix. Default: "" (No suffix)"
 		CALL :DebugLog "[ --gfs ]                                            - Set to enable Grandfather-Father-Son rotation. Default: Disabled"
+		CALL :DebugLog "[ -e | --exclude ]   { VM-Name }                     - Set to exclude a single VM from Backup. Default: "" (Backup all VMs)"
+		CALL :DebugLog "[ -i | --include ]   { VM-Name }                     - Set to include only a single VM Backup. Default: "" (Backup all VMs)"
 		ECHO: 
 		CALL :DebugLog "Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage"
 		ECHO:
@@ -59,6 +63,12 @@ CLS
 
 	CALL :getParamFlag "--gfs" "_GFS" "%~1" && SHIFT /1 && GOTO :ParseParameters
 
+	CALL :getParameter "-e" "_EXCLUDE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParameter "--exclude" "_EXCLUDE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+
+	CALL :getParameter "-i" "_INCLUDE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParameter "--include" "_INCLUDE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+
 	IF NOT DEFINED _BACKUPDIR (
 		FOR %%i IN ("%~dp0.") DO SET "_BACKUPDIR=%%~fi"
 	)
@@ -70,9 +80,6 @@ CLS
 	)
 	IF NOT DEFINED _KEEP (
 		SET _KEEP=0
-	)
-	IF NOT DEFINED _PREFIX (
-		SET "_PREFIX="
 	)
 	IF NOT DEFINED _GFS (
 		SET "_GFS=FALSE"
@@ -99,6 +106,8 @@ CLS
 	CALL :DebugLog "Name Prefix: %_PREFIX%"
 	CALL :DebugLog "Name Suffix: %_SUFFIX%"
 	CALL :DebugLog "GrandFather-Father-Son: %_GFS%"
+	CALL :DebugLog "Exclude: %_EXCLUDE%"
+	CALL :DebugLog "Include: %_INCLUDE%"
 	ECHO:
 	ECHO:
 
@@ -121,8 +130,23 @@ CLS
 		SET _LOOPCOUNT=12
 
 		CALL :DebugLog "%_VMNAME%"
-		:: Uncomment and modify the following line to skip a specific VM
-		:: IF "%_VMNAME%"=="Home Assistant" EXIT /B 0
+		:VM_Include
+		:: Check if the VM is explicitly included and skip everything else
+			IF DEFINED _INCLUDE (
+				IF NOT "%_VMNAME%"=="%_INCLUDE%" (
+					CALL :DebugLog "VM is excluded, skipping..."
+					EXIT /B 0
+				)
+			)
+
+		:VM_Exclude
+		:: Check if the VM in excluded from Backup and skip
+			IF DEFINED _EXCLUDE (
+				IF "%_VMNAME%"=="%_EXCLUDE%" (
+					CALL :DebugLog "VM is excluded, skipping..."
+					EXIT /B 0
+				)
+			)
 
 		:VM_GFS
 		:: Check for an existing backup on the same date and skip the VM if exists
@@ -130,7 +154,7 @@ CLS
 				CALL :DebugLog "Checking for existing backups..."
 				FOR /F "eol=: delims=" %%F IN ('DIR /B "%_BACKUPDIR%\%_VMNAME%\*%_DATE%*"') DO (
 					CALL :DebugLog "Found: %_VMNAME%\%%~F..."
-					Exit /B 0
+					EXIT /B 0
 				)
 			)
 
