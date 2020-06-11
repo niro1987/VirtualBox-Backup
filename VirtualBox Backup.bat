@@ -16,6 +16,7 @@ CLS
 	SET "_COMPRESS="
 	SET "_KEEP="
 	SET "_PREFIX="
+	SET "_SUFFIX="
 	SET "_GFS="
 
 	:ParseParameters
