@@ -80,7 +80,8 @@ CLS
 
 	SET "_VBOXMANAGE=C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 	SET "_7za=C:\Program Files\7-Zip\7za.exe"
-	SET "_DATE=%_DATETIME:~0,8%"
+	SET "_DATE=%_DATETIME:~0,4%.%_DATETIME:~4,2%.%_DATETIME:~6,2%"
+	SET "_TIME=%_DATETIME:~8,2%.%_DATETIME:~10,2%"
 	SET _ERROR=0
 	SET _WAITTIME=5
 
@@ -149,7 +150,7 @@ CLS
 			IF EXIST "%_7za%" (
 				ROBOCOPY "%_VMPATH%." "%TEMP%\%_VMUUID%" /E
 			) ELSE (
-				ROBOCOPY "%_VMPATH%." "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATETIME%%_SUFFIX%" /E
+				ROBOCOPY "%_VMPATH%." "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%-%_TIME%%_SUFFIX%" /E
 			)
 
 		:VM_Start
@@ -163,7 +164,7 @@ CLS
 		:: Compress the VM Backup Files to a single compressed file
 			IF EXIST "%_7za%" (
 				CALL :DebugLog "Compress Files..."
-				"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATETIME%%_SUFFIX%.7z" "%TEMP%\%_VMUUID%\*"
+				"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%-%_TIME%%_SUFFIX%.7z" "%TEMP%\%_VMUUID%\*"
 				RD /S /Q "%TEMP%\%_VMUUID%"
 			)
 
