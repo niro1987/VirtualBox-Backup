@@ -10,6 +10,7 @@ An automated backup for Oracle VirtualBox VMs in Windows
   - [Cleanup Mode](#cleanup-mode)
   - [Name Prefix/Suffix](#name-prefixsuffix)
   - [Grandfather-Father-Son Rotation](#grandfather-father-son-rotation)
+  - [Exclude/Include](#excludeinclude)
 
 # Installation
 1. Clone or copy this repository to the desired location.
@@ -105,3 +106,19 @@ By the end of June 2020 it would look like this.
 | Grandfather | X   | X   | X   | -   | -    | -    | -    | -    | -    |
 | Father      | -   | -   | -   | X   | X    | X    | -    | X    | -    |
 | Son         | -   | -   | -   | -   | -    | -    | X    | -    | X    |
+
+## Exclude/Include
+```
+[ -e | --exclude ] { VM-Name }
+[ -i | --include ] { VM-Name }
+```
+Set one of the above parameters to exclude or explicitly include a single VM in the Backup rotation. Does not accept wildcards, is case sensitive.
+
+Explicitly **excluding** a single VM will still run backups for all other VMs. Explicitly **including** a single VM will *exclude* all other VMs.
+
+| Parameter | Description |
+| --------- | ----------- |
+| `--exclude=""` | *(default)* Backup all VMs. |
+| `--exclude="Not Me"` | Will exclude only the VM named `Not Me` from the backup rotation but does backup the rest. |
+| `--include=""` | *(default)* Backup all VMs. |
+| `--include="Remi"` | Will include only the VM named `Remi` from the backup rotation and ignores the rest. |

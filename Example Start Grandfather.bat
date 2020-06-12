@@ -9,6 +9,8 @@ FOR %%C IN ("%~dp0.") DO SET "_VBBACKUP=%%~fC\VirtualBox Backup.bat"
 :: [ -p | --prefix ]    { PREFIX }                      - Set to change Name Prefix. Default: "" (No prefix)
 :: [ -s | --suffix ]    { SUFFIX }                      - Set to change Name Suffix. Default: "" (No suffix)
 :: [ --gfs ]                                            - Set to enable Grandfather-Father-Son rotation. Default: Disabled
+:: [ -e | --exclude ]   { VM-Name }                     - Set to exclude a single VM from Backup. Default: "" (Backup all VMs)
+:: [ -i | --include ]   { VM-Name }                     - Set to include only a single VM Backup. Default: "" (Backup all VMs)
 
 :: Example - Modify according to your needs
 "%_VBBACKUP%" --backupdir="" --shutdown=acpipowerbutton --compress=5 --keep=2 --prefix="GFS Rotation" --suffix="Monthly" --gfs
