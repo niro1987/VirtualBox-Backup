@@ -14,6 +14,7 @@ CLS
 	SET "_BACKUPDIR="
 	SET "_SHUTDOWN="
 	SET "_COMPRESS="
+	SET "_COMPRESSENABLED="
 	SET "_KEEP="
 	SET "_PREFIX="
 	SET "_SUFFIX="
@@ -91,6 +92,14 @@ CLS
 	SET "_TIME=%_DATETIME:~8,2%.%_DATETIME:~10,2%"
 	SET _ERROR=0
 	SET _WAITTIME=5
+
+	IF %_COMPRESS% GEQ 0 (
+		IF %_COMPRESS% LEQ 9 (
+			IF EXIST "%_7za%" (
+				SET "_COMPRESSENABLED=TRUE"
+			)
+		)
+	)
 
 	"%_VBOXMANAGE%" list vms
 	ECHO: 
@@ -171,7 +180,7 @@ CLS
 		:: Copy the VM files
 			CALL :GetPath
 			CALL :DebugLog "Copy Files..."
-			IF EXIST "%_7za%" (
+			IF DEFINED _COMPRESSENABLED (
 				ROBOCOPY "%_VMPATH%." "%TEMP%\%_VMUUID%" /E
 			) ELSE (
 				ROBOCOPY "%_VMPATH%." "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%-%_TIME%%_SUFFIX%" /E
@@ -186,7 +195,7 @@ CLS
 
 		:VM_Compress
 		:: Compress the VM Backup Files to a single compressed file
-			IF EXIST "%_7za%" (
+			IF DEFINED _COMPRESSENABLED (
 				CALL :DebugLog "Compress Files..."
 				"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%-%_TIME%%_SUFFIX%.7z" "%TEMP%\%_VMUUID%\*"
 				RD /S /Q "%TEMP%\%_VMUUID%"
