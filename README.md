@@ -55,6 +55,7 @@ The VM Backup Files can be compressed to a single file to save some diskspace an
 
 | Parameter | Description |
 | --------- | ----------- |
+| `--compress=-1` | Disables compression. |
 | `--compress=0` | *(default)* No compression. While this does not actually compress the files, it does make them easier to handle because the backup is reduced to a single file. |
 | `--compress=[1 - 9]` | Set compression level: 1 (fastest) ... 9 (ultra). |
 
