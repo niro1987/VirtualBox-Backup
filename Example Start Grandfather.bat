@@ -1,16 +1,22 @@
 @ECHO OFF
-FOR %%C IN ("%~dp0.") DO SET "_VBBACKUP=%%~fC\VirtualBox Backup.bat"
+CLS
+FOR %%C IN ("%~dp0.") DO (
+    SET "_CURRENTDIR=%%~fC"
+    SET "_VBBACKUP=%_CURRENTDIR%\VirtualBox Backup.bat"
+)
 :: Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage
 :: 
-:: [ -b | --backupdir ] { PATH }                        - Set to change Backup Folder. Default: .\ (Same folder as this file)
-:: [ -s | --shutdown ]  [ acpipowerbutton | savestate ] - Set to change Shutdown Mode. Default: acpipowerbutton (Clean shutdown)
-:: [ -c | --compress ]  [ 0 - 9 ]                       - Set to change Compression Mode. Default: 0 (No compression)
-:: [ -k | --keep ]      [ 0 - ~ ]                       - Set to change Cleanup Mode. Default: 0 (All)
-:: [ -p | --prefix ]    { PREFIX }                      - Set to change Name Prefix. Default: "" (No prefix)
-:: [ -s | --suffix ]    { SUFFIX }                      - Set to change Name Suffix. Default: "" (No suffix)
-:: [ --gfs ]                                            - Set to enable Grandfather-Father-Son rotation. Default: Disabled
-:: [ -e | --exclude ]   { VM-Name }                     - Set to exclude a single VM from Backup. Default: "" (Backup all VMs)
-:: [ -i | --include ]   { VM-Name }                     - Set to include only a single VM Backup. Default: "" (Backup all VMs)
+:: [ --backupdir ]  { PATH }            - Sets the Backup Folder. Leave out for Snapshot Only
+:: [ --backupmode ] [ acpipowerbutton ] - Sets the Backup Mode. Default: snapshot
+::                  [ savestate ]         
+:: .                [ snapshot ]          
+:: [ --prefix ]     { STRING }          - Prefix your backup with a string. Default: No prefix
+:: [ --suffix ]     { STRING }          - Append your backup with a string. Default: No suffix
+:: [ --include ]    { VM-Name }         - Backup only a single VM. Default: Backup all VMs
+:: [ --exclude ]    { VM-Name }         - Exclude a single VM from backup. Default: Does not exclude any
+:: [ --compress ]   [ 0 - 9 ]           - Sets the Compression Mode. Default: -1 (Disabled)
+:: [ --keep ]       [ 0 - ~ ]           - Keep this many backups, present included. Default: 0 (Keep all)
+:: [ --stack ]                          - Do not delete snapshots. Uses a lot of drive space.
 
 :: Example - Modify according to your needs
-"%_VBBACKUP%" --backupdir="" --shutdown=acpipowerbutton --compress=5 --keep=2 --prefix="GFS Rotation" --suffix="Monthly" --gfs
+"%_VBBACKUP%" --backupdir "%_CURRENTDIR%" --backupmode snapshot --suffix "Monthly Backup" --compress 1 --keep 3

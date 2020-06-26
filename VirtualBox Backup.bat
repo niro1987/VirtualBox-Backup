@@ -10,88 +10,52 @@ CLS
 	CALL :DebugLog "Starting VirtualBox Backup..."
 	FOR %%L IN ("%~dp0.") DO SET "_LOGFILE=%%~fL\log.txt"
 
-	SET "_README="
-	SET "_BACKUPDIR="
-	SET "_SHUTDOWN="
-	SET "_COMPRESS="
-	SET "_COMPRESSENABLED="
-	SET "_KEEP="
-	SET "_PREFIX="
-	SET "_SUFFIX="
-	SET "_GFS="
-	SET "_EXCLUDE="
-	SET "_INCLUDE="
-
-	:ParseParameters
-	CALL :getParamFlag "/?" "_README" "%~1" && SHIFT /1 && GOTO :ParseParameters
-	IF DEFINED _README (
-		ECHO:
-		ECHO:
-		CALL :DebugLog "VirtualBox Backup - Help"
-		ECHO:
-		CALL :DebugLog "[ -b | --backupdir ] { PATH }                        - Set to change Backup Folder. Default: .\ (Same folder as this file)"
-		CALL :DebugLog "[ -s | --shutdown ]  [ acpipowerbutton | savestate ] - Set to change Shutdown Mode. Default: acpipowerbutton (Clean shutdown)"
-		CALL :DebugLog "[ -c | --compress ]  [ 0 - 9 ]                       - Set to change Compression Mode. Default: 0 (No compression)"
-		CALL :DebugLog "[ -k | --keep ]      [ 0 - ~ ]                       - Set to change Cleanup Mode. Default: 0 (All)"
-		CALL :DebugLog "[ -p | --prefix ]    { PREFIX }                      - Set to change Name Prefix. Default: "" (No prefix)"
-		CALL :DebugLog "[ -s | --suffix ]    { SUFFIX }                      - Set to change Name Suffix. Default: "" (No suffix)"
-		CALL :DebugLog "[ --gfs ]                                            - Set to enable Grandfather-Father-Son rotation. Default: Disabled"
-		CALL :DebugLog "[ -e | --exclude ]   { VM-Name }                     - Set to exclude a single VM from Backup. Default: "" (Backup all VMs)"
-		CALL :DebugLog "[ -i | --include ]   { VM-Name }                     - Set to include only a single VM Backup. Default: "" (Backup all VMs)"
-		ECHO: 
-		CALL :DebugLog "Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage"
-		ECHO:
-		EXIT /B 0 
-	)
-
-	CALL :getParameter "-b" "_BACKUPDIR" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-	CALL :getParameter "--backupdir" "_BACKUPDIR" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-
-	CALL :getParameter "-s" "_SHUTDOWN" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-	CALL :getParameter "--shutdown" "_SHUTDOWN" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-
-	CALL :getParameter "-c" "_COMPRESS" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-	CALL :getParameter "--compress" "_COMPRESS" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-
-	CALL :getParameter "-k" "_KEEP" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-	CALL :getParameter "--keep" "_KEEP" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-
-	CALL :getParameter "-p" "_PREFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-	CALL :getParameter "--prefix" "_PREFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-
-	CALL :getParameter "-s" "_SUFFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-	CALL :getParameter "--suffix" "_SUFFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-
-	CALL :getParamFlag "--gfs" "_GFS" "%~1" && SHIFT /1 && GOTO :ParseParameters
-
-	CALL :getParameter "-e" "_EXCLUDE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-	CALL :getParameter "--exclude" "_EXCLUDE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-
-	CALL :getParameter "-i" "_INCLUDE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-	CALL :getParameter "--include" "_INCLUDE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
-
-	IF NOT DEFINED _BACKUPDIR (
-		FOR %%i IN ("%~dp0.") DO SET "_BACKUPDIR=%%~fi"
-	)
-	IF NOT DEFINED _SHUTDOWN (
-		SET _SHUTDOWN=acpipowerbutton
-	)
-	IF NOT DEFINED _COMPRESS (
-		SET _COMPRESS=0
-	)
-	IF NOT DEFINED _KEEP (
-		SET _KEEP=0
-	)
-	IF NOT DEFINED _GFS (
-		SET "_GFS=FALSE"
-	)
-
 	SET "_VBOXMANAGE=C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 	SET "_7za=C:\Program Files\7-Zip\7za.exe"
 	SET "_DATE=%_DATETIME:~0,4%.%_DATETIME:~4,2%.%_DATETIME:~6,2%"
 	SET "_TIME=%_DATETIME:~8,2%.%_DATETIME:~10,2%"
-	SET _ERROR=0
-	SET _WAITTIME=5
+	SET "_ERROR=0"
+	SET "_README="
+	SET "_BACKUPDIR="
+	SET "_BACKUPMODE="
+	SET "_PREFIX="
+	SET "_SUFFIX="
+	SET "_INCLUDE="
+	SET "_EXCLUDE="
+	SET "_COMPRESS="
+	SET "_COMPRESSENABLED="
+	SET "_KEEP="
+	SET "_STACK="
+	
+	:ParseParameters
+	CALL :getParamFlag "/?" "_README" "%~1" && SHIFT /1 && GOTO :ParseParameters
+	IF DEFINED _README GOTO :ReadMe
+	CALL :getParameter "--backupdir" "_BACKUPDIR" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParameter "--backupmode" "_BACKUPMODE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParameter "--prefix" "_PREFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParameter "--suffix" "_SUFFIX" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParameter "--include" "_INCLUDE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParameter "--exclude" "_EXCLUDE" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParameter "--compress" "_COMPRESS" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParameter "--keep" "_KEEP" "%~1" "%~2" && SHIFT /1 && SHIFT /1 && GOTO :ParseParameters
+	CALL :getParamFlag "--stack" "_STACK" "%~1" && SHIFT /1 && GOTO :ParseParameters
+
+	IF NOT DEFINED _BACKUPDIR (
+		SET "_BACKUPDIR=false"
+		SET "_BACKUPMODE=snapshot"
+		SET _COMPRESS=-1
+		SET _KEEP=0
+		SET "_STACK=TRUE"
+	)
+	IF NOT DEFINED _BACKUPMODE (
+		SET "_BACKUPMODE=snapshot"
+	)
+	IF NOT DEFINED _COMPRESS (
+		SET _COMPRESS=-1
+	)
+	IF NOT DEFINED _KEEP (
+		SET _KEEP=0
+	)
 
 	IF %_COMPRESS% GEQ 0 (
 		IF %_COMPRESS% LEQ 9 (
@@ -104,19 +68,39 @@ CLS
 	"%_VBOXMANAGE%" list vms
 	ECHO: 
 	CALL :DebugLog "Parameters..."
-	CALL :DebugLog "Backup Folder: %_BACKUPDIR%"
-	CALL :DebugLog "Shutdown Mode: %_SHUTDOWN%"
-	IF EXIST "%_7za%" (
-		CALL :DebugLog "Compression Mode: %_COMPRESS%"
+	IF /I NOT "%_BACKUPDIR%"=="false" (
+		CALL :DebugLog "Backup Folder: %_BACKUPDIR%"
 	) ELSE (
-		CALL :DebugLog "Compression Mode: Disabled"
+		CALL :DebugLog "Backup Folder: Snapshot Only"
 	)
-	CALL :DebugLog "Cleanup Mode: %_KEEP%"
-	CALL :DebugLog "Name Prefix: %_PREFIX%"
-	CALL :DebugLog "Name Suffix: %_SUFFIX%"
-	CALL :DebugLog "GrandFather-Father-Son: %_GFS%"
-	CALL :DebugLog "Exclude: %_EXCLUDE%"
-	CALL :DebugLog "Include: %_INCLUDE%"
+	CALL :DebugLog "Backup Mode: %_BACKUPMODE%"
+	IF DEFINED _PREFIX (
+		CALL :DebugLog "Prefix: %_PREFIX%"
+	)
+	IF DEFINED _SUFFIX (
+		CALL :DebugLog "Suffix: %_SUFFIX%"
+	)
+	IF DEFINED _INCLUDE (
+		CALL :DebugLog "Include: %_INCLUDE%"
+	)
+	IF DEFINED _EXCLUDE (
+		CALL :DebugLog "Exclude: %_EXCLUDE%"
+	)
+	IF DEFINED _COMPRESSENABLED (
+		CALL :DebugLog "Compress: %_COMPRESS%"
+	) ELSE (
+		CALL :DebugLog "Compress: Disabled"
+	)
+	IF %_KEEP% GTR 0 (
+		CALL :DebugLog "Keep: %_KEEP%"
+	) ELSE (
+		CALL :DebugLog "Keep: All"
+	)
+	IF DEFINED _STACK (
+		CALL :DebugLog "Stack: True"
+	) ELSE (
+		CALL :DebugLog "Stack: False"
+	)
 	ECHO:
 	ECHO:
 
@@ -128,91 +112,123 @@ CLS
 	)
 
 	FOR /F "tokens=* delims=" %%V IN ('"%_VBOXMANAGE%" list vms') DO CALL :VM_Initialize %%V
+	
 	GOTO :Terminate
 
 	:VM_Initialize
 	:: Set Variables
 		SET "_VMNAME=%~1"
 		SET "_VMUUID=%~2"
-		SET "_VMINITSTATE="
+
 		SET _REQUESTOFF=0
 		SET _LOOPCOUNT=12
+		SET _WAITTIME=5
+		SET "_VMINITSTATE="
 
-		CALL :DebugLog "%_VMNAME%"
-		:VM_Include
-		:: Check if the VM is explicitly included and skip everything else
-			IF DEFINED _INCLUDE (
-				IF NOT "%_VMNAME%"=="%_INCLUDE%" (
-					CALL :DebugLog "VM is excluded, skipping..."
-					EXIT /B 0
-				)
+		CALL :GetInfo
+
+		ECHO:
+		CALL :DebugLog "%_VM_NAME%"
+
+		SET "_VMBACKUPNAME=%_PREFIX%%_DATE%-%_TIME%%_SUFFIX%"
+
+	:VM_Include
+	:: Check if the VM is explicitly included and skip everything else
+		IF DEFINED _INCLUDE (
+			IF NOT "%_VM_NAME%"=="%_INCLUDE%" (
+				CALL :DebugLog "VM is excluded, skipping..."
+				EXIT /B 0
 			)
+		)
 
-		:VM_Exclude
-		:: Check if the VM in excluded from Backup and skip
-			IF DEFINED _EXCLUDE (
-				IF "%_VMNAME%"=="%_EXCLUDE%" (
-					CALL :DebugLog "VM is excluded, skipping..."
-					EXIT /B 0
-				)
+	:VM_Exclude
+	:: Check if the VM in excluded from Backup and skip
+		IF DEFINED _EXCLUDE (
+			IF "%_VM_NAME%"=="%_EXCLUDE%" (
+				CALL :DebugLog "VM is excluded, skipping..."
+				EXIT /B 0
 			)
+		)
 
-		:VM_GFS
-		:: Check for an existing backup on the same date and skip the VM if exists
-			IF "%_GFS%"=="TRUE" (
-				CALL :DebugLog "Checking for existing backups..."
-				FOR /F "eol=: delims=" %%F IN ('DIR /B "%_BACKUPDIR%\%_VMNAME%\*%_DATE%*"') DO (
-					CALL :DebugLog "Found: %_VMNAME%\%%~F..."
-					EXIT /B 0
-				)
+	:VM_Shutdown
+	:: Shutdown VM
+		CALL :DebugLog "VM state: %_VM_VMSTATE%"
+		SET "_VMINITSTATE=%_VM_VMSTATE%"
+		IF /I "%_BACKUPMODE%"=="acpipowerbutton" (
+			IF /I "%_VM_VMSTATE%"=="running" (
+				Call :DebugLog "ACPI Shutdown..."
+				CALL :Shutdown
 			)
-
-		:VM_PowerOff
-		:: Shut down the VM (if it's running)
-			CALL :GetState
-			IF /I "%_VMSTATE%"=="running" (
-				CALL :DebugLog "VM is %_VMSTATE%.."
-				CALL :PowerOff
+		)
+		IF /I "%_BACKUPMODE%"=="savestate" (
+			IF /I "%_VM_VMSTATE%"=="running" (
+				Call :DebugLog "Savestate..."
+				CALL :Shutdown
 			)
-			CALL :DebugLog "VM is %_VMSTATE%.."
+		)
 
-		:VM_CopyFiles
-		:: Copy the VM files
-			CALL :GetPath
-			CALL :DebugLog "Copy Files..."
-			IF DEFINED _COMPRESSENABLED (
-				ROBOCOPY "%_VMPATH%." "%TEMP%\%_VMUUID%" /E
-			) ELSE (
-				ROBOCOPY "%_VMPATH%." "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%-%_TIME%%_SUFFIX%" /E
-			)
+	:VM_Create_Snapshot
+	:: Create a snapshot
+		CALL :DebugLog "Creating Snapshot..."
+		"%_VBOXMANAGE%" ^
+			snapshot %_VM_UUID% ^
+			take "%_VMBACKUPNAME%" ^
+			--live
 
-		:VM_Start
-		:: Start the VM (if it was running)
+	:VM_Start
+	:: Start the VM (if it was running)
+		CALL :GetInfo
+		IF /I NOT "%_VM_VMSTATE%"=="running" (
 			IF /I "%_VMINITSTATE%"=="running" (
 				CALL :DebugLog "Starting VM..."
-				CALL :PowerOn
+				"%_VBOXMANAGE%" ^
+					startvm %_VM_UUID% ^
+					--type headless
 			)
+		)
 
-		:VM_Compress
-		:: Compress the VM Backup Files to a single compressed file
-			IF DEFINED _COMPRESSENABLED (
-				CALL :DebugLog "Compress Files..."
-				"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%%_DATE%-%_TIME%%_SUFFIX%.7z" "%TEMP%\%_VMUUID%\*"
-				RD /S /Q "%TEMP%\%_VMUUID%"
+	:VM_Copy
+	:: Copy the VM to TEMP
+		IF /I NOT "%_BACKUPDIR%"=="false" (
+			CALL :DebugLog "Copy..."
+			CALL :GetVMPath
+			ROBOCOPY "%_VMPATH%." "%TEMP%\%_VM_UUID%" /E
+		)
+
+	:VM_Delete_Snapshot
+	:: Delete snapshot 
+		IF NOT DEFINED _STACK (
+			CALL :DebugLog "Deleting Snapshot..."
+			"%_VBOXMANAGE%" ^
+				snapshot %_VM_UUID% ^
+				delete "%_VMBACKUPNAME%"
+		)
+
+	:VM_Compress
+	:: Compress
+		IF DEFINED _COMPRESSENABLED (
+			CALL :DebugLog "Compressing..."
+			"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VM_Name%\%_VMBACKUPNAME%.7z" "%TEMP%\%_VM_UUID%\*"
+		) ELSE (
+			IF /I NOT "%_BACKUPDIR%"=="false" (
+				CALL :DebugLog "Moving..."
+				ROBOCOPY "%TEMP%\%_VM_UUID%" "%_BACKUPDIR%\%_VM_Name%\%_VMBACKUPNAME%" /E /MOVE
 			)
+		)
+		REM RD /S /Q "%TEMP%\%_VM_UUID%" > nul
 
-		:VM_Cleanup
-		:: Delete old backups
+	:VM_Cleanup
+	:: Delete old backups
 		IF %_KEEP% GTR 0 (
-			CALL :DebugLog "Cleanup of old backups..."
-			FOR /F "skip=%_KEEP% eol=: delims=" %%F IN ('DIR /T:C /B /O:-D "%_BACKUPDIR%\%_VMNAME%\%_PREFIX%*%_SUFFIX%*"') DO (
-				CALL :DebugLog "Delete %_VMNAME%\%%~F..."
-				FOR %%Z IN ("%_BACKUPDIR%\%_VMNAME%\%%~F") DO (
+			CALL :DebugLog "Cleanup..."
+			FOR /F "skip=%_KEEP% eol=: delims=" %%F IN ('DIR /T:C /B /O:-D "%_BACKUPDIR%\%_VM_Name%\%_PREFIX%*%_SUFFIX%*"') DO (
+				CALL :DebugLog "Delete %%~F..."
+				FOR %%Z IN ("%_BACKUPDIR%\%_VM_Name%\%%~F") DO (
 					IF "%%~aZ" GEQ "d" (
-						RD /S /Q "%_BACKUPDIR%\%_VMNAME%\%%~F"
+						RD /S /Q "%_BACKUPDIR%\%_VM_Name%\%%~F"
 					) ELSE (
 						IF "%%~aZ" GEQ "-" (
-							DEL "%_BACKUPDIR%\%_VMNAME%\%%~F"
+							DEL "%_BACKUPDIR%\%_VM_Name%\%%~F"
 						)
 					)
 				)
@@ -222,8 +238,20 @@ CLS
 	:VM_Terminate
 	:: That's all folks!
 		ECHO:
+		CALL :DebugLog "%_VM_NAME% done!"
 		EXIT /B 0
 		GOTO :EOF
+
+:Terminate
+:: Check for errors and exit..
+	IF %_ERROR% EQU 100 (
+		SET _ERRORMSG="Timeout"
+	)
+	IF %_ERROR% GTR 0 (
+		CALL :DebugLog  "ERROR: %_ERRORMSG%"
+	)
+	EXIT /B
+	GOTO :EOF
 
 :DebugLog
 	CALL :getDateTime
@@ -234,71 +262,58 @@ CLS
     )
     EXIT /B 0
 
-:Terminate
-:: Check for errors and exit..
-	IF %_ERROR% EQU 100 (
-		SET _ERRORMSG="Timeout during Shutdown"
-	)
-	IF %_ERROR% GTR 0 (
-		CALL :DebugLog  "ERROR: %_ERRORMSG%"
-	)
-	EXIT /B
-	GOTO :EOF
-
-:PowerOn
-:: Takes the VM UUID from %_VMUUID% and start the VM in headless mode
-	"%_VBOXMANAGE%" startvm %_VMUUID% --type headless
+:getDateTime
+:: https://ss64.com/nt/syntax-getdate.html
+:: Returns the current date in YYYYMMDDHHMM format in _DATETIME
+	ECHO Dim dt > "%TEMP%\getdatetime.vbs"
+	ECHO dt=now >> "%TEMP%\getdatetime.vbs"
+	ECHO wscript.echo ((year(dt)*100 + month(dt))*100 + day(dt))*10000 + hour(dt)*100 + minute(dt) >> "%TEMP%\getdatetime.vbs"
+	FOR /F %%D IN ('cscript /nologo "%TEMP%\getdatetime.vbs"') DO SET _DATETIME=%%D
+	DEL /Q "%TEMP%\getdatetime.vbs"
 	EXIT /B 0
-	GOTO :EOF
 
-:PowerOff
-:: Takes the VM UUID from %_VMUUID% and tries to shut it down
-	CALL :GetState
-	IF /I NOT "%_VMSTATE%"=="running" EXIT /B 0
+:GetInfo
+:: Takes the VM UUID from %_VMUUID% and return the VM properties in separate variables
+	SET "_VARPREFIX=_VM_"
+	IF DEFINED _VM_UUID (
+		FOR /F "tokens=* delims==" %%A IN ('SET %_VARPREFIX%') DO CALL :ResetVar %%A
+	)
+	"%_VBOXMANAGE%" showvminfo %_VMUUID% --machinereadable > "%TEMP%\%_VMUUID%.txt"
+	FOR /F "tokens=* delims==" %%A IN (%TEMP%\%_VMUUID%.txt) DO CALL :ParseVar %%A
+	REM DEL "%TEMP%\%_VMUUID%.txt"
+	EXIT /B 0
+
+:GetVMPath
+:: Extract the VM base path and save it in _VMPATH
+	FOR /F "tokens=* delims=" %%A IN ("%_VM_CfgFile%") DO (
+		SET "_VMPATH=%%~dpA"
+	)
+	EXIT /B 0
+
+:ParseVar
+	SET "%_VARPREFIX%%~1=%~2"
+	EXIT /B 0
+
+:ResetVar
+	SET "%1="
+	EXIT /B 0
+
+:Shutdown
+	IF /I NOT "%_VM_VMSTATE%"=="running" EXIT /B 0
 	IF %_REQUESTOFF% EQU 0 (
 		SET _REQUESTOFF=1
-		CALL :DebugLog "VM Shutdown..."
-		"%_VBOXMANAGE%" controlvm %_VMUUID% %_SHUTDOWN%
+		"%_VBOXMANAGE%" controlvm %_VM_UUID% %_BACKUPMODE%
 	)
 	IF %_LOOPCOUNT% GTR 0 (
-		CALL :DebugLog "Waiting for VM to shut down..."
+		CALL :DebugLog "Waiting for shut down..."
 		TIMEOUT /T %_WAITTIME% /nobreak > nul
 		SET /A _LOOPCOUNT-=1
-		CALL :PowerOff
+		CALL :GetInfo
+		CALL :Shutdown
 	) ELSE (
 		SET _ERROR=100
 		GOTO :Terminate
 	)
-	GOTO :EOF
-
-:GetState
-:: Takes the VM UUID from %_VMUUID% and returns the state in %_VMSTATE%
-:: The %_VMSTATE% variable changes during shutdown, %_VMINITSTATE% does not
-	"%_VBOXMANAGE%" showvminfo %_VMUUID% --machinereadable > %TEMP%\%_VMUUID%.txt
-	FOR /F "tokens=2 delims==" %%A IN ('FINDSTR /I /B "VMState=" "%TEMP%\%_VMUUID%.txt"') DO (
-		SET "_VMSTATE=%%~A"
-	)
-	IF "%_VMINITSTATE%"=="" (
-		SET "_VMINITSTATE=%_VMSTATE%"
-	)
-	IF EXIST "%TEMP%\%_VMUUID%.txt" (
-		DEL "%TEMP%\%_VMUUID%.txt"
-	)
-	EXIT /B 0
-	GOTO :EOF
-
-:GetPath
-:: Takes the VM UUID from %_VMUUID% and returns the folder path in %_VMPATH%
-	"%_VBOXMANAGE%" showvminfo %_VMUUID% --machinereadable > %TEMP%\%_VMUUID%.txt
-	FOR /F "tokens=* delims=" %%A IN ('FINDSTR /I /B "CfgFile=" "%TEMP%\%_VMUUID%.txt"') DO (
-		FOR %%B IN (%%~A) DO (
-			SET "_VMPATH=%%~dpB"
-		)
-	)
-	IF EXIST "%TEMP%\%_VMUUID%.txt" (
-		DEL "%TEMP%\%_VMUUID%.txt"
-	)
-	EXIT /B 0
 	GOTO :EOF
 
 :getParameter
@@ -330,11 +345,26 @@ CLS
 	EXIT /B 1
 	GOTO :EOF
 
-:getDateTime
-:: https://ss64.com/nt/syntax-getdate.html
-:: Returns the current date in YYYYMMDDHHMM format in _DATETIME
-	ECHO Dim dt > "%TEMP%\getdatetime.vbs"
-	ECHO dt=now >> "%TEMP%\getdatetime.vbs"
-	ECHO wscript.echo ((year(dt)*100 + month(dt))*100 + day(dt))*10000 + hour(dt)*100 + minute(dt) >> "%TEMP%\getdatetime.vbs"
-	FOR /F %%D IN ('cscript /nologo "%TEMP%\getdatetime.vbs"') DO SET _DATETIME=%%D
-	DEL /Q "%TEMP%\getdatetime.vbs"
+:ReadMe
+	ECHO:
+	ECHO:
+	CALL :DebugLog "VirtualBox Backup - Help"
+	ECHO:
+	CALL :DebugLog "[ --backupdir ]  { PATH }            - Sets the Backup Folder. Leave out for Snapshot Only"
+	CALL :DebugLog "[ --backupmode ] [ acpipowerbutton ] - Sets the Backup Mode. Default: snapshot"
+	CALL :DebugLog "                 [ savestate ]         "
+	CALL :DebugLog ".                [ snapshot ]          "
+	CALL :DebugLog "[ --prefix ]     { STRING }          - Prefix your backup with a string. Default: No prefix"
+	CALL :DebugLog "[ --suffix ]     { STRING }          - Append your backup with a string. Default: No suffix"
+	CALL :DebugLog "[ --include ]    { VM-Name }         - Backup only a single VM. Default: Backup all VMs"
+	CALL :DebugLog "[ --exclude ]    { VM-Name }         - Exclude a single VM from backup. Default: Does not exclude any"
+	CALL :DebugLog "[ --compress ]   [ 0 - 9 ]           - Sets the Compression Mode. Default: -1 (Disabled)"
+	CALL :DebugLog "[ --keep ]       [ 0 - ~ ]           - Keep this many backups, present included. Default: 0 (Keep all)"
+	CALL :DebugLog "[ --stack ]                          - Do not delete snapshots. Uses a lot of drive space.
+	
+	ECHO:
+	CALL :DebugLog "Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage"
+	ECHO:
+	ECHO:
+
+	GOTO :Terminate
