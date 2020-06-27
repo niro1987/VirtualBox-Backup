@@ -189,9 +189,9 @@ CLS
 
 	:VM_Copy
 	:: Copy the VM to TEMP
+		CALL :GetVMPath
 		IF /I NOT "%_BACKUPDIR%"=="false" (
 			CALL :DebugLog "Copy..."
-			CALL :GetVMPath
 			ROBOCOPY "%_VMPATH%." "%TEMP%\%_VM_UUID%" /E
 		)
 
