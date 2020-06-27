@@ -56,8 +56,8 @@ To restore a backup you simply copy/extract the files to your desired location, 
 
 ## Prefix/Suffix
 ```
-[ -p | --prefix ] { PREFIX }
-[ -s | --suffix ] { SUFFIX }
+[ --prefix ] { PREFIX }
+[ --suffix ] { SUFFIX }
 ```
 Each backup is saved to a subfolder inside the [target folder](#backup-dir) named after the VM. The backup is named `[prefix ]YYYY.MM.DD-HH24.MM[ suffix]`. Pass one or both parameters to append an additional string to the backup name.
 
