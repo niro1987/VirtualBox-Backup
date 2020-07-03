@@ -1,9 +1,7 @@
 @ECHO OFF
 CLS
-FOR %%C IN ("%~dp0.") DO (
-    SET "_CURRENTDIR=%%~fC"
-    SET "_VBBACKUP=%_CURRENTDIR%\VirtualBox Backup.bat"
-)
+FOR %%C IN ("%~dp0.") DO SET "_CURRENTDIR=%%~fC"
+SET "_VBBACKUP=%_CURRENTDIR%\VirtualBox Backup.bat"
 :: Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage
 :: 
 :: [ --backupdir ]  { PATH }            - Sets the Backup Folder. Leave out for Snapshot Only
