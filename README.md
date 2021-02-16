@@ -84,7 +84,7 @@ Explicitly *excluding* a single VM will still run backups for all other VMs. Exp
 ```
 [ --compress ]  [ -1 - 9 ]
 ```
-***!!!*** In order to enable data compression you need to install [7-Zip](https://www.7-zip.org/) and [7-Zip Extra](https://www.7-zip.org/). To disable compression, leave this parameter out or explicitly set it to `-1`.
+***!!!*** In order to enable data compression you need to install [7-Zip](https://www.7-zip.org/) and [7-Zip Extra](https://www.7-zip.org/). To disable compression, leave this parameter out or explicitly set it to `-1`. **How to install [7-Zip Extra](https://www.7-zip.org/):** From the 7-Zip download page, look for 7-Zip Extra and download the `.7z` file to go with your operating system. Extract the files to `C:\Program Files\7-Zip\`, overwriting when asked. This is also the default folder for 7-Zip but you should create it if it doesn't exist.
 
 The VM Backup Files can be compressed to a single 7-Zip file to save some diskspace and to make them easier to move around.
 
