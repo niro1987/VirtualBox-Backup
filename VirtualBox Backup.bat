@@ -11,7 +11,7 @@ CLS
 	FOR %%L IN ("%~dp0.") DO SET "_LOGFILE=%%~fL\log.txt"
 
 	SET "_VBOXMANAGE=C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
-	SET "_7za=C:\Program Files\7-Zip\7za.exe"
+	SET "_7z=C:\Program Files\7-Zip\7z.exe"
 	SET "_DATE=%_DATETIME:~0,4%.%_DATETIME:~4,2%.%_DATETIME:~6,2%"
 	SET "_TIME=%_DATETIME:~8,2%.%_DATETIME:~10,2%"
 	SET "_ERROR=0"
@@ -59,7 +59,7 @@ CLS
 
 	IF %_COMPRESS% GEQ 0 (
 		IF %_COMPRESS% LEQ 9 (
-			IF EXIST "%_7za%" (
+			IF EXIST "%_7z%" (
 				SET "_COMPRESSENABLED=TRUE"
 			)
 		)
@@ -208,7 +208,7 @@ CLS
 	:: Compress
 		IF DEFINED _COMPRESSENABLED (
 			CALL :DebugLog "Compressing..."
-			"%_7za%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VM_Name%\%_VMBACKUPNAME%.7z" "%TEMP%\%_VM_UUID%\*"
+			"%_7z%" a -mx%_COMPRESS% -sdel "%_BACKUPDIR%\%_VM_Name%\%_VMBACKUPNAME%.7z" "%TEMP%\%_VM_UUID%\*"
 		) ELSE (
 			IF /I NOT "%_BACKUPDIR%"=="false" (
 				CALL :DebugLog "Moving..."
