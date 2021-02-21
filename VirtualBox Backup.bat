@@ -2,7 +2,6 @@
 :: Creates a backup of all VMs in Oracle VirtualBox
 :: 
 
-@ECHO OFF
 CLS
 
 :Initialize
