@@ -1,6 +1,6 @@
-:: 
+::
 :: Creates a backup of all VMs in Oracle VirtualBox
-:: 
+::
 
 @ECHO OFF
 CLS
@@ -66,7 +66,7 @@ CLS
 	)
 
 	"%_VBOXMANAGE%" list vms
-	ECHO: 
+	ECHO:
 	CALL :DebugLog "Parameters..."
 	IF /I NOT "%_BACKUPDIR%"=="false" (
 		CALL :DebugLog "Backup Folder: %_BACKUPDIR%"
@@ -196,7 +196,7 @@ CLS
 		)
 
 	:VM_Delete_Snapshot
-	:: Delete snapshot 
+	:: Delete snapshot
 		IF NOT DEFINED _STACK (
 			CALL :DebugLog "Deleting Snapshot..."
 			"%_VBOXMANAGE%" ^

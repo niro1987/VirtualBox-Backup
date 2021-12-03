@@ -3,11 +3,11 @@ CLS
 FOR %%C IN ("%~dp0.") DO SET "_CURRENTDIR=%%~fC"
 SET "_VBBACKUP=%_CURRENTDIR%\VirtualBox Backup.bat"
 :: Please read the full documentation on https://github.com/niro1987/VirtualBox-Backup#usage
-:: 
+::
 :: [ --backupdir ]  { PATH }            - Sets the Backup Folder. Leave out for Snapshot Only
 :: [ --backupmode ] [ acpipowerbutton ] - Sets the Backup Mode. Default: snapshot
-::                  [ savestate ]         
-:: .                [ snapshot ]          
+::                  [ savestate ]
+:: .                [ snapshot ]
 :: [ --prefix ]     { STRING }          - Prefix your backup with a string. Default: No prefix
 :: [ --suffix ]     { STRING }          - Append your backup with a string. Default: No suffix
 :: [ --include ]    { VM-Name }         - Backup only a single VM. Default: Backup all VMs
